@@ -10,6 +10,8 @@ import com.zoi4erom.shop.repository.ProductRepository;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,17 +42,20 @@ public class ProductService {
 		    .toList();
 	}
 
+	@Cacheable(value = "ProductService::findProductsByProductTypeName", key = "#productTypeName")
 	public List<ProductReadDto> findProductsByProductTypeName(String productTypeName) {
 		return productRepository.findProductsByProductType_Name(productTypeName).stream()
 		    .map(productMapper::toDto)
 		    .toList();
 	}
 
+	@Cacheable(value = "ProductService::findProductById", key = "#productId")
 	public Optional<ProductReadDto> findProductById(Integer productId) {
 		return productRepository.findById(productId)
 		    .map(productMapper::toDto);
 	}
 
+	@Cacheable(value = "ProductService::findProductByName", key = "#productName")
 	public Optional<ProductReadDto> findProductByName(String productName) {
 		return productRepository.findProductsByName(productName)
 		    .map(productMapper::toDto);
@@ -72,6 +77,7 @@ public class ProductService {
 		return true;
 	}
 
+	@CacheEvict(value = "ProductService::findProductById", key = "#productId")
 	public boolean deleteProduct(Integer productId) {
 		try {
 			productRepository.deleteById(productId);

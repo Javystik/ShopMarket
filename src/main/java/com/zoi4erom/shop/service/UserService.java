@@ -8,6 +8,10 @@ import com.zoi4erom.shop.repository.UserRepository;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -36,16 +40,19 @@ public class UserService {
 		    .toList();
 	}
 
+	@Cacheable(value = "UserService::findUserById", key = "#userId")
 	public Optional<UserReadDto> findUserById(Integer userId) {
 		return userRepository.findById(userId)
 		    .map(userMapper::toDto);
 	}
 
+	@Cacheable(value = "UserService:findUserByUsername", key = "#username")
 	public Optional<UserReadDto> findUserByUsername(String username) {
 		return userRepository.findUserByUsername(username)
 		    .map(userMapper::toDto);
 	}
 
+	@Cacheable(value = "UserService:findUserByEmail", key = "#email")
 	public Optional<UserReadDto> findUserByEmail(String email) {
 		return userRepository.findUserByEmail(email)
 		    .map(userMapper::toDto);
@@ -67,11 +74,11 @@ public class UserService {
 		if (userSaveDto.getEmail() != null && !userSaveDto.getEmail().isBlank()) {
 			user.setEmail(userSaveDto.getEmail());
 		}
-
 		userRepository.save(user);
 		return true;
 	}
 
+	@CacheEvict(value = "UserService::getById", key = "#userId")
 	public boolean deleteUserById(Integer userId) {
 		try {
 			userRepository.deleteById(userId);

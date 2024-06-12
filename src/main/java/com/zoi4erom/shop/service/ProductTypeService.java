@@ -8,6 +8,8 @@ import com.zoi4erom.shop.repository.ProductTypeRepository;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -34,6 +36,7 @@ public class ProductTypeService {
 		    .toList();
 	}
 
+	@Cacheable(value = "ProductTypeService::findProductTypeById", key = "#productTypeId")
 	public Optional<ProductTypeReadDto> findProductTypeById(Integer productTypeId) {
 		return productTypeRepository.findById(productTypeId)
 		    .map(productTypeMapper::toDto);
@@ -53,6 +56,7 @@ public class ProductTypeService {
 		return true;
 	}
 
+	@CacheEvict(value = "ProductTypeService::findProductTypeById", key = "#productTypeId")
 	public boolean deleteProductType(Integer productTypeId) {
 		try {
 			productTypeRepository.deleteById(productTypeId);
